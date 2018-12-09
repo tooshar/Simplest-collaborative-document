@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+
+    <head>
+        <title>Challenge</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font: 13px Helvetica, Arial;
+            }
+
+            textarea {
+                margin: 50px;
+            }
+
+            canvas{
+                padding: 40px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>The world's simplest collaborative document</h1>
+        <canvas  id='identicon' width="80" height="80">
+        </canvas>
+        <textarea id='message' rows="4" cols="50" placeholder="Write anything here and see your new user avatar being created!!!"></textarea>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jdenticon@2.1.0" async>
+        </script>
+        <script>
+            $(function () {
+                var socket = io();
+                
+                $('#message').on('keyup', function () {
+                    socket.emit('text-message', $('#message').val());
+                });
+
+                socket.on('text-message', function (msg) {
+                    $('#message').val(msg);
+                });
+
+                socket.on('user_id', function (user_id) {
+                    jdenticon.update("#identicon", socket.id);
+                    if ($("#message").is(":focus") && socket.id == user_id) {
+                        
+                        $('#message').prop('disabled', false);
+                    } else {
+                        $('#message').prop('disabled', true);
+                    }
+                });
+
+                $('#message').focusout(function () {
+                    socket.emit('enable-or-disable-text', false);
+                });
+
+                $('#message').focusin(function () {
+                    socket.emit('enable-or-disable-text', true);
+                });
+
+                socket.on('enable-or-disable-text', function (msg, user_id) {
+                    if (socket.id != user_id)
+                        $('#message').prop('disabled', msg);
+                });
+
+                window.onbeforeunload = function () {
+                    socket.emit('enable-or-disable-text', false);
+                };
+            });
+        </script>
+    </body>
+
+</html>
