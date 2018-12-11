@@ -13,7 +13,7 @@ io.on('connection', function (socket) {
 
     });
 
-    socket.on('enable-or-disable-text', function (msg, ) {
+    socket.on('enable-or-disable-text', function (msg) {
         io.emit('enable-or-disable-text', msg, socket.id)
     });
 });
